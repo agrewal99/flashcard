@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flashcard Quiz</title>
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Arial, sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      height: 100vh;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    .flashcard {
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    .flashcard p {
+      font-size: 18px;
+      color: #333;
+      margin: 0;
+    }
+
+    .button {
+      background-color: #007bff;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin: 5px;
+    }
+
+    .button:hover {
+      background-color: #0056b3;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .fade {
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div id="flashcard" class="flashcard fade">
+    <p id="content">Loading...</p>
+  </div>
+  <button class="button" onclick="showPreviousCard()">Back</button>
+  <button class="button" onclick="flipCard()">Flip</button>
+  <button class="button" onclick="showNextCard()">Next</button>
+</div>
+
+<script>
+  const flashcards = [
+    { question: "What is a medical emergency?", answer: "A medical emergency is a life-threatening condition requiring immediate attention and proper management to prevent injury, illness, or death. Examples include heart attacks, seizures, and severe allergic reactions." },
+    { question: "What is the legal duty of care for dental practitioners?", answer: "Dental practitioners have a duty of care to act in the best interests of their patients, avoid any actions that could cause harm, and stay within their level of competence. This includes preparing for emergencies, maintaining updated training, and following protocols." },
+    { question: "How often must a dental team conduct emergency drills?", answer: "Emergency drills should be conducted at least every three months to ensure the team is prepared for rare but serious incidents. Drills improve response times and reinforce protocols for managing emergencies." },
+    { question: "Name a vital drug used in almost all medical emergencies.", answer: "Oxygen is a vital emergency drug used in almost all medical emergencies. It helps patients experiencing difficulty breathing and is essential in cases like myocardial infarction, hypoxia, and respiratory distress. Oxygen should be administered at high flow rates until the patient stabilizes or help arrives." },
+    { question: "What is the IDC's recommended frequency for BLS training?", answer: "The Irish Dental Council recommends that dental practitioners renew their Basic Life Support (BLS) certification every two years. This ensures that skills stay fresh and practitioners are ready to respond to emergencies." },
+    { question: "What is the first step if a patient is unresponsive?", answer: "If a patient is unresponsive, first check for breathing. If they are not breathing, initiate Basic Life Support (BLS), which includes chest compressions and rescue breaths as appropriate, to maintain circulation and oxygenation until professional help arrives." },
+    { question: "List three key signs of hypoglycemia.", answer: "Key signs of hypoglycemia include shaking, sweating, and headache. Other symptoms may include confusion, slurred speech, and aggression. It’s essential to check blood sugar and administer glucose if necessary." },
+    { question: "What should you do if a patient faints?", answer: "If a patient faints, lay them flat, raise their legs to promote blood flow to the brain, and check their airway and breathing. Keep them lying down until they fully recover to avoid further dizziness or injury." },
+    { question: "What action is required for stable angina?", answer: "For stable angina, administer glyceryl trinitrate (GTN) with caution as it can lower blood pressure, and provide oxygen if needed. If symptoms persist despite GTN, consider it a potential myocardial infarction and prepare for further emergency measures." },
+    { question: "How should you respond to a choking patient who cannot talk or breathe?", answer: "If a choking patient cannot talk, cough, or breathe, perform the Heimlich maneuver to dislodge the obstruction. If the patient becomes unconscious, begin Basic Life Support and call emergency services." },
+    { question: "What are the main signs of myocardial infarction?", answer: "Signs of myocardial infarction (heart attack) include severe central chest pain, nausea, cold sweaty skin, difficulty breathing, and sometimes radiating pain in the neck or jaw. Immediate emergency care is needed." },
+    { question: "What drug is used in anaphylaxis, and how is it administered?", answer: "Adrenaline (epinephrine) is administered intramuscularly in anaphylaxis to counteract severe allergic reactions. The recommended dose for adults is 0.5ml of a 1:1000 solution. Repeat every 5 minutes as needed." },
+    { question: "What are common symptoms of adrenal crisis?", answer: "Symptoms of adrenal crisis include collapse, pallor, cold and clammy skin, vomiting, dizziness, and low blood pressure. Immediate administration of hydrocortisone and supportive care are crucial." },
+    { question: "When should you call for an ambulance if a patient has a seizure?", answer: "Call for an ambulance if the seizure lasts more than 5 minutes, if it's the patient's first seizure, or if the patient has difficulty recovering. Prolonged seizures can be life-threatening and require urgent medical attention." },
+    { question: "What equipment is essential in every dental setting for emergencies?", answer: "Essential emergency equipment includes an automated external defibrillator (AED), oxygen cylinder, oropharyngeal airways, a pocket mask with an oxygen port, and a suction device. These tools support breathing and circulation." },
+    { question: "What drug should be given for an unconscious hypoglycemic patient?", answer: "Administer Glucagon if a patient with hypoglycemia is unconscious. Glucagon helps raise blood glucose levels and can be given intramuscularly." },
+    { question: "Describe the National Early Warning Score (NEWS) in dental emergencies.", answer: "The National Early Warning Score (NEWS) is a scoring system that helps assess a patient's condition in emergencies. It aids in determining when to continue treatment or call an ambulance." },
+    { question: "What symptoms indicate acute severe asthma?", answer: "Acute severe asthma symptoms include an inability to complete a sentence, respiratory rate ≥ 25 breaths per minute, and a pulse rate above 110 bpm. Immediate treatment is required to prevent escalation." },
+    { question: "What symptoms suggest life-threatening asthma?", answer: "Life-threatening asthma symptoms include cyanosis, absence of wheezing, bradycardia (heart rate ≤ 50 bpm), respiratory rate < 8/min, exhaustion, confusion, and decreased consciousness. These symptoms warrant immediate emergency care." },
+    { question: "What is the IDC's guidance on emergency documentation?", answer: "The IDC advises documenting vital signs, treatment provided, drugs administered, the patient's condition, and signatures of providers involved. Proper documentation is essential for post-emergency review and legal records." }
+  ];
+
+  let currentCard = 0;
+  let showingQuestion = true;
+
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  function showNextCard() {
+    currentCard = (currentCard + 1) % flashcards.length;
+    showingQuestion = true;
+    updateCardContent();
+  }
+
+  function showPreviousCard() {
+    currentCard = (currentCard - 1 + flashcards.length) % flashcards.length;
+    showingQuestion = true;
+    updateCardContent();
+  }
+
+  function flipCard() {
+    showingQuestion = !showingQuestion;
+    updateCardContent();
+  }
+
+  function updateCardContent() {
+    const flashcardDiv = document.getElementById("flashcard");
+    const card = flashcards[currentCard];
+    flashcardDiv.classList.add("hidden");
+
+    setTimeout(() => {
+      flashcardDiv.classList.remove("hidden");
+      flashcardDiv.classList.add("fade");
+
+      document.getElementById("content").textContent = showingQuestion ? card.question : card.answer;
+    }, 300);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    shuffle(flashcards);
+    updateCardContent();
+  });
+</script>
+
+</body>
+</html>
